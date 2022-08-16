@@ -1,8 +1,14 @@
--- one = '👍'
--- zero = '🤙'
-one = '1'
-zero = '0'
+import Prelude hiding (putStr)
+import Data.ByteString.Char8 (putStr)
+import Data.ByteString.UTF8 (fromString)
+import Data.List.Split (chunksOf)
 
-parse :: [Char] -> [Char]
-parse text = filter (\x -> elem x [one, zero]) text
+one = '👍' -- does not need encoding
+zero = '\129305' -- encoded '🤙'
+
+parse :: String -> String
+parse = unlines . (chunksOf 8) . (filter (\x -> x `elem` [one, zero]))
+
+main :: IO ()
+main = interact parse
 
