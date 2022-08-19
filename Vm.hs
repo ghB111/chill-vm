@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+module Vm where
 import System.IO.Unsafe (unsafePerformIO)
 
 -- todo add 8bit number support
