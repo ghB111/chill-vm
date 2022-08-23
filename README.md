@@ -41,3 +41,7 @@ Chill vm has a set of particularly not useful instructions (0=🤙, 1=👍):
 00001100: prt, 1: register idx, from which the string begins, 2: register where string length is stored
 11111111: stp, stops execution
 ```
+
+Possible todos:
+ - [ ] Stop using unsafePerformIO
+ - [ ] Read user input
