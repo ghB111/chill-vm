@@ -87,7 +87,6 @@ step vm@ChillVm{registers} (Ld regDst regSrc) = vm { registers = replaceNth regD
     where copiedValue = (registers !! regSrc)
 step vm Sgf = error "This should be a segfault"
 step vm@ChillVm{pc} Jmp{dst} = vm {pc = dst}
--- todo update ccr
 step vm@ChillVm{registers} Pls{reg, regDst} = 
     let fst = registers !! reg
         snd = registers !! regDst

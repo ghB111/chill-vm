@@ -1,3 +1,4 @@
+This program prints "hello world" to stdout
 🤙🤙🤙🤙🤙🤙🤙🤙 -- it is good manners to chill a bit
 -- at the start of the program
 🤙🤙🤙🤙🤙🤙🤙🤙
