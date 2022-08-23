@@ -54,7 +54,7 @@ data Instruction =
     Bbr {dst :: Address} |
     Lbr {dst :: Address} |
     Cmp {reg1 :: Register, reg2 :: Register} |
-    Prt {start :: Register, len :: Int} |
+    Prt {startReg :: Register, lenReg :: Register} |
     Stp |
     TestHW
     deriving (Show)
@@ -111,8 +111,10 @@ step vm@ChillVm{ccr = CCR{zero, sign}} Lbr{dst}
     | zero = vm
     | sign = vm {pc = dst}
     | otherwise = vm
-step vm@ChillVm{registers} Prt{start, len} =
-    let resStr = map chr $ slice start (start + len) registers
+step vm@ChillVm{registers} Prt{startReg, lenReg} =
+    let start = registers !! startReg
+        len = registers !! lenReg
+        resStr = map chr $ slice start (start + len) registers
     in unsafePerformIO $ do
         putStr resStr
         return vm
@@ -157,4 +159,23 @@ exampleLoop =
     , TestHW
     , Ldc 1 1, Mns 0 1, Ld 0 1, Jmp 1
     , Stp ] -- 10
+
+exampleFairHelloWorld = 
+    [ Ldc 200 72
+    , Ldc 201 101
+    , Ldc 202 108
+    , Ldc 203 108
+    , Ldc 204 111
+    , Ldc 205 32
+    , Ldc 206 87
+    , Ldc 207 111
+    , Ldc 208 114
+    , Ldc 209 108
+    , Ldc 210 100
+    , Ldc 211 33
+    , Ldc 212 10
+    , Ldc 0 200
+    , Ldc 1 13
+    , Prt 0 1
+    , Stp ]
 
