@@ -28,6 +28,7 @@ Chill vm has a set of particularly not useful instructions:
 00001001: bbr, 1: where to jump, if last operation returned >0
 00001010: lbr, 1: where to jump, if last operation returned <0
 00001011: cmp, same as mns, doesn't store result
+00001100: prt, 1: register idx, from which the string begins, 2: string length
 11111111: stp, stops execution, prints vm state
 ```
 

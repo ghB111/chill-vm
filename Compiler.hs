@@ -28,6 +28,7 @@ bitcodeToInstruction str = case str of
     "00001001" -> Instruction1 Bbr
     "00001010" -> Instruction1 Lbr
     "00001011" -> Instruction2 Cmp
+    "00001100" -> Instruction2 Prt
     "11111110" -> Instruction0 TestHW
     "11111111" -> Instruction0 Stp
 

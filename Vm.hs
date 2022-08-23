@@ -12,11 +12,13 @@ module Vm ( run
                         , Bbr
                         , Lbr
                         , Cmp
+                        , Prt
                         , TestHW
                         , Stp )
           , Program
           , ChillVm (ChillVm)) where
 import System.IO.Unsafe (unsafePerformIO)
+import Data.Char (chr)
 
 -- todo add 8bit number support
 
@@ -52,6 +54,7 @@ data Instruction =
     Bbr {dst :: Address} |
     Lbr {dst :: Address} |
     Cmp {reg1 :: Register, reg2 :: Register} |
+    Prt {start :: Register, len :: Int} |
     Stp |
     TestHW
     deriving (Show)
@@ -71,6 +74,9 @@ replaceNth _ _ [] = []
 replaceNth n newVal (x:xs)
     | n == 0 = newVal:xs
     | otherwise = x:replaceNth (n-1) newVal xs
+
+slice :: Int -> Int -> [a] -> [a]
+slice from to xs = take (to - from + 1) (drop from xs)
 
 step :: ChillVm -> Instruction -> ChillVm
 step vm Stp  = vm { state = Stopped }
@@ -105,6 +111,11 @@ step vm@ChillVm{ccr = CCR{zero, sign}} Lbr{dst}
     | zero = vm
     | sign = vm {pc = dst}
     | otherwise = vm
+step vm@ChillVm{registers} Prt{start, len} =
+    let resStr = map chr $ slice start (start + len) registers
+    in unsafePerformIO $ do
+        putStr resStr
+        return vm
 step vm@ChillVm{ccr = CCR{zero, sign}, registers} Cmp{reg1, reg2} =
     let reg1Val = registers !! reg1
         reg2Val = registers !! reg2
