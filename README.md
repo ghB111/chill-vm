@@ -9,11 +9,10 @@ ChillVm has 256 integer (8bit-)registers, can perform math operations on them
 
 ChillVm can also perform ascii string operations (which is a big irony, considering the bytecode is utf),
 but string size is limited to 256 chars, as well as string storage is same as integer registers
+
 In other words, loading a 256-chars string will erase every register
 
-todo add memory
-
-Chill vm has a set of particularly not useful instructions:
+Chill vm has a set of particularly not useful instructions (0=🤙, 1=👍):
 
 ```
 00000000: chl (chill~~, basically, nop)
@@ -29,6 +28,5 @@ Chill vm has a set of particularly not useful instructions:
 00001010: lbr, 1: where to jump, if last operation returned <0
 00001011: cmp, same as mns, doesn't store result
 00001100: prt, 1: register idx, from which the string begins, 2: register where string length is stored
-11111111: stp, stops execution, prints vm state
+11111111: stp, stops execution
 ```
-
