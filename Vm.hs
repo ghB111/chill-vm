@@ -1,5 +1,21 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Vm where
+module Vm ( run
+          , Instruction ( Chl
+                        , Ldc
+                        , Nul
+                        , Ld
+                        , Sgf
+                        , Jmp
+                        , Pls
+                        , Mns
+                        , Zbr
+                        , Bbr
+                        , Lbr
+                        , Cmp
+                        , TestHW
+                        , Stp )
+          , Program
+          , ChillVm (ChillVm)) where
 import System.IO.Unsafe (unsafePerformIO)
 
 -- todo add 8bit number support

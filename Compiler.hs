@@ -1,10 +1,7 @@
-module Compiler where
+module Compiler ( compile ) where
 
 import Vm
 import Parser
-
-compile :: [Byte] -> Program
-compile = undefined
 
 -- instructions by number of arguements
 data InstructionT = 
@@ -31,6 +28,7 @@ bitcodeToInstruction str = case str of
     "00001001" -> Instruction1 Bbr
     "00001010" -> Instruction1 Lbr
     "00001011" -> Instruction2 Cmp
+    "11111110" -> Instruction0 TestHW
     "11111111" -> Instruction0 Stp
 
 byteToInstruction :: Byte -> InstructionT
@@ -55,4 +53,9 @@ parseOne (b:bs) = case instT of
     where instT = byteToInstruction b
           bsInt = map byteToInt bs
           bInt = byteToInt b
+
+compile :: [Byte] -> Program
+compile [] = []
+compile bytes = parsedOne : (compile others)
+    where (parsedOne, others) = parseOne bytes
 

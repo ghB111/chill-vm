@@ -12,11 +12,17 @@ import Data.List.Split (chunksOf)
 one = '👍' -- does not need encoding
 zero = '\129305' -- encoded '🤙'
 
+preprocess :: String -> [String]
+preprocess = (chunksOf 8) . (filter (\x -> x `elem` [one, zero]))
+
+toBits :: [String] -> [String]
+toBits = map (map (\x -> if x == one then '1' else '0'))
+
 parse :: String -> [String]
-parse = (chunksOf 8) . (filter (\x -> x `elem` [one, zero]))
+parse = toBits . preprocess
 
 main :: IO ()
-main = interact $ unlines . parse
+main = interact $ unlines . preprocess
 
 data Bit = Zero | One deriving (Eq)
 data Byte = Byte (Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit)
