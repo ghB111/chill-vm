@@ -12,6 +12,17 @@ but string size is limited to 256 chars, as well as string storage is same as in
 
 In other words, loading a 256-chars string will erase every register
 
+*Checkout [a hello world example](https://github.com/ghB111/chill-vm/blob/main/ex-hello-world.txt) written in chill-bytecode*
+
+# Build and run
+
+```
+git clone https://github.com/ghB111/chill-vm.git
+cd chill-vm
+./build.sh
+./build/chill-run ./ex-hello-world.txt
+```
+
 Chill vm has a set of particularly not useful instructions (0=🤙, 1=👍):
 
 ```
