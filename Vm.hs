@@ -1,5 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Vm ( run
+          , run_
           , Instruction ( Chl
                         , Ldc
                         , Nul
@@ -17,7 +18,6 @@ module Vm ( run
                         , Stp )
           , Program
           , ChillVm (ChillVm)) where
-import System.IO.Unsafe (unsafePerformIO)
 import Data.Char (chr)
 
 -- todo add 8bit number support
@@ -78,43 +78,43 @@ replaceNth n newVal (x:xs)
 slice :: Int -> Int -> [a] -> [a]
 slice from to xs = take (to - from + 1) (drop from xs)
 
-step :: ChillVm -> Instruction -> ChillVm
-step vm Stp  = vm { state = Stopped }
-step vm Chl = vm
-step vm@ChillVm{registers} (Ldc reg const) = vm { registers = replaceNth reg const registers }
-step vm (Nul reg) = vm { registers = replaceNth reg 0 $ registers vm }
-step vm@ChillVm{registers} (Ld regDst regSrc) = vm { registers = replaceNth regDst copiedValue registers }
+step :: ChillVm -> Instruction -> IO (ChillVm)
+step vm Stp  = return $ vm { state = Stopped }
+step vm Chl = return vm
+step vm@ChillVm{registers} (Ldc reg const) = return $ vm { registers = replaceNth reg const registers }
+step vm (Nul reg) = return $ vm { registers = replaceNth reg 0 $ registers vm }
+step vm@ChillVm{registers} (Ld regDst regSrc) = return $ vm { registers = replaceNth regDst copiedValue registers }
     where copiedValue = (registers !! regSrc)
-step vm Sgf = error "This should be a segfault"
-step vm@ChillVm{pc} Jmp{dst} = vm {pc = dst}
+step vm Sgf = return $ error "This should be a segfault"
+step vm@ChillVm{pc} Jmp{dst} = return $ vm {pc = dst}
 step vm@ChillVm{registers} Pls{reg, regDst} = 
     let fst = registers !! reg
         snd = registers !! regDst
         newVal = fst + snd
         updatedRegs = replaceNth regDst newVal registers
-    in step vm {registers = updatedRegs} $ Cmp reg regDst
+    in  step vm {registers = updatedRegs} $ Cmp reg regDst
 step vm@ChillVm{registers} Mns{reg, regDst} =
     let fst = registers !! reg
         snd = registers !! regDst
         newVal = fst - snd
         updatedRegs = replaceNth regDst newVal registers
-    in step vm {registers = updatedRegs} $ Cmp reg regDst
+    in  step vm {registers = updatedRegs} $ Cmp reg regDst
 step vm@ChillVm{ccr = CCR{zero}} Zbr{dst}
-    | zero = vm {pc = dst}
-    | otherwise = vm
+    | zero = return vm {pc = dst}
+    | otherwise = return vm
 step vm@ChillVm{ccr = CCR{zero, sign}} Bbr{dst}
-    | zero = vm
-    | sign = vm
-    | otherwise = vm {pc = dst}
+    | zero = return vm
+    | sign = return vm
+    | otherwise = return vm {pc = dst}
 step vm@ChillVm{ccr = CCR{zero, sign}} Lbr{dst}
-    | zero = vm
-    | sign = vm {pc = dst}
-    | otherwise = vm
+    | zero = return vm
+    | sign = return vm {pc = dst}
+    | otherwise = return vm
 step vm@ChillVm{registers} Prt{startReg, lenReg} =
     let start = registers !! startReg
         len = registers !! lenReg
         resStr = map chr $ slice start (start + len) registers
-    in unsafePerformIO $ do
+    in do
         putStr resStr
         return vm
 step vm@ChillVm{ccr = CCR{zero, sign}, registers} Cmp{reg1, reg2} =
@@ -123,30 +123,40 @@ step vm@ChillVm{ccr = CCR{zero, sign}, registers} Cmp{reg1, reg2} =
         s = signum (reg1Val - reg2Val)
         zero = s == 0
         sign = s < 0
-        in vm{ccr = CCR{zero = zero, sign = sign}}
-step vm TestHW = unsafePerformIO $ do
+        in return vm{ccr = CCR{zero = zero, sign = sign}}
+step vm TestHW = do
     putStrLn "Hello world!"
     return vm
 
-performInstruction :: ChillVm -> Instruction -> ChillVm
-performInstruction vm@ChillVm{state = Stopped} _ = vm
+performInstruction :: ChillVm -> Instruction -> IO (ChillVm)
+performInstruction vm@ChillVm{state = Stopped} _ = return vm
 performInstruction vm@ChillVm{pc} instruction = (step vm { pc = succ pc } instruction) 
  
-run :: Program -> ChillVm
+run :: Program -> IO (ChillVm)
 run program = run' makeVm program
-    where run' vm@ChillVm{state = Stopped} _ = vm
+    where run' :: ChillVm -> Program -> IO (ChillVm)
+          run' vm@ChillVm{state = Stopped} _ = return vm
           run' vm@ChillVm{pc} program = let selectedInst = program !! pc
-            in run' (performInstruction vm selectedInst) program
+            in do
+                newState <-performInstruction vm selectedInst
+                run' newState program
 
-debug :: Program -> ChillVm
+run_ :: Program -> IO ()
+run_ program = do
+    run program
+    return ()
+
+debug :: Program -> IO (ChillVm)
 debug program = run' makeVm program
-    where run' vm@ChillVm{state = Stopped} _ = unsafePerformIO $ do
+    where run' :: ChillVm -> Program -> IO (ChillVm)
+          run' vm@ChillVm{state = Stopped} _ = do
               putStrLn "STOPPED"
               return vm
           run' vm@ChillVm{pc} program = let selectedInst = program !! pc
-            in unsafePerformIO $ do
+            in do
                 print vm
-                return $ run' (performInstruction vm selectedInst) program
+                newState <- performInstruction vm selectedInst
+                run' newState program
 
 
 exampleProgram = [Chl, Ldc 10 20, Ld 0 10, Stp]

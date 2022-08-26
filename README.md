@@ -43,5 +43,5 @@ Chill vm has a set of particularly not useful instructions (0=🤙, 1=👍):
 ```
 
 Possible todos:
- - [ ] Stop using unsafePerformIO
+ - [x] Stop using unsafePerformIO
  - [ ] Read user input

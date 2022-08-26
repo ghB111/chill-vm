@@ -5,10 +5,11 @@ import Control.DeepSeq (deepseq, NFData(rnf))
 
 import Parser (parse, fromString)
 import Compiler (compile)
-import qualified Vm (run, ChillVm)
+import qualified Vm (run, run_, ChillVm)
 
 runVerbose :: String -> IO ()
 runVerbose sourceName = do
+    putStrLn "Running in verbose mode"
     input <- readFile sourceName
     putStrLn $ "Before processing:\n" ++ input
     let parsed = parse input
@@ -16,11 +17,8 @@ runVerbose sourceName = do
     let bytecode = map fromString parsed
     let program = compile bytecode
     putStrLn $ "Program is:\n" ++ show program
-    let finalState = Vm.run program
+    finalState <- Vm.run program
     putStrLn $ "Final state:\n" ++ show finalState
-
-instance NFData Vm.ChillVm where
-    rnf a = a `seq` ()
 
 run :: String -> IO ()
 run sourceName = do
@@ -28,8 +26,7 @@ run sourceName = do
     let parsed = parse input
     let bytecode = map fromString parsed
     let program = compile bytecode
-    let finalState = Vm.run program
-    finalState `deepseq` (return ())
+    Vm.run_ program
 
 showUsage = do
     putStrLn "Usage: chill-run path-to-text"
@@ -40,7 +37,7 @@ main = do
         then do
             if length args /= 2
                 then showUsage
-                else run $ args !! 1
+                else runVerbose $ args !! 1
         else if length args == 1
             then run $ head args
             else showUsage
