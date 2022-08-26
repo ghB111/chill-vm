@@ -38,10 +38,14 @@ Chill vm has a set of particularly not useful instructions (0=🤙, 1=👍):
 00001001: bbr, 1: where to jump, if last operation returned >0
 00001010: lbr, 1: where to jump, if last operation returned <0
 00001011: cmp, same as mns, doesn't store result
-00001100: prt, 1: register idx, from which the string begins, 2: register where string length is stored
+00001100: prt, 1: register with pointer to where the string begins, 2: register where string length is stored
+00001101: rdc, 1: register with pointer to place where a read char will be stored
 11111111: stp, stops execution
 ```
 
 Possible todos:
  - [x] Stop using unsafePerformIO
- - [ ] Read user input
+ - [x] Read user input
+ - [ ] Macroinstructions
+ - [ ] Assembly dsl?
+

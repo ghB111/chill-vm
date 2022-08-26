@@ -14,11 +14,12 @@ module Vm ( run
                         , Lbr
                         , Cmp
                         , Prt
+                        , Rdc
                         , TestHW
                         , Stp )
           , Program
           , ChillVm (ChillVm)) where
-import Data.Char (chr)
+import Data.Char (chr, ord)
 
 -- todo add 8bit number support
 
@@ -55,6 +56,7 @@ data Instruction =
     Lbr {dst :: Address} |
     Cmp {reg1 :: Register, reg2 :: Register} |
     Prt {startReg :: Register, lenReg :: Register} |
+    Rdc {reg :: Register} |
     Stp |
     TestHW
     deriving (Show)
@@ -117,6 +119,12 @@ step vm@ChillVm{registers} Prt{startReg, lenReg} =
     in do
         putStr resStr
         return vm
+step vm@ChillVm{registers} Rdc{reg} =
+    let dest = registers !! reg
+    in do
+        c <- getChar
+        let cAsInt = ord c
+        return vm {registers = replaceNth dest cAsInt registers}
 step vm@ChillVm{ccr = CCR{zero, sign}, registers} Cmp{reg1, reg2} =
     let reg1Val = registers !! reg1
         reg2Val = registers !! reg2
@@ -186,5 +194,21 @@ exampleFairHelloWorld =
     , Ldc 0 200
     , Ldc 1 13
     , Prt 0 1
+    , Stp ]
+
+exampleReadString = -- Reads five characters from stdin, prints "hello $name"
+    [ Ldc 0 5 -- read 5 times
+    , Ldc 10 200 -- stdin string starts at 200
+    , Ldc 11 1
+    , Cmp 0 255, Zbr 11 -- if iterations are over, jump to printing
+    , Rdc 10 -- read char
+    , Ldc 12 1
+    , Mns 0 12
+    , Ld 0 12
+    , Pls 11 10 -- pointer to next read char ++
+    , Jmp 3
+    , Ldc 10 200
+    , Ldc 11 5
+    , Prt 10 11
     , Stp ]
 
