@@ -1,5 +1,8 @@
 module Compiler ( compile ) where
 
+import Numeric (showIntAtBase)
+import Data.Char (intToDigit)
+
 import Vm
 import Parser
 
@@ -29,8 +32,34 @@ bitcodeToInstruction str = case str of
     "00001010" -> Instruction1 Lbr
     "00001011" -> Instruction2 Cmp
     "00001100" -> Instruction2 Prt
+    "00001101" -> Instruction1 Rdc
     "11111110" -> Instruction0 TestHW
     "11111111" -> Instruction0 Stp
+
+instructionToBitcode :: Instruction -> [String]
+instructionToBitcode str = (map $ padLeft '0' 8) $ case str of
+    Chl     -> ["00000000"]
+    (Ldc x y)    -> ["00000001", asBits x, asBits y]
+    (Nul x)    -> ["00000010", asBits x]
+    (Ld x y)     -> ["00000011", asBits x, asBits y]
+    Sgf    -> ["00000100"]
+    (Jmp x)    -> ["00000101", asBits x]
+    (Pls x y)    -> ["00000110", asBits x, asBits y]
+    (Mns x y)    -> ["00000111", asBits x, asBits y]
+    (Zbr x)    -> ["00001000", asBits x]
+    (Bbr x)    -> ["00001001", asBits x]
+    (Lbr x)    -> ["00001010", asBits x]
+    (Cmp x y)    -> ["00001011", asBits x, asBits y]
+    (Prt x y)    -> ["00001100", asBits x, asBits y]
+    (Rdc x)    -> ["00001101", asBits x]
+    TestHW -> ["11111110"]
+    Stp    -> ["11111111"]
+
+asBits :: Int -> String
+asBits x = showIntAtBase 2 intToDigit x ""
+
+padLeft :: Char -> Int -> String -> String
+padLeft padder len str = replicate (len - length str) padder ++ str
 
 byteToInstruction :: Byte -> InstructionT
 byteToInstruction byte = bitcodeToInstruction $ show byte
