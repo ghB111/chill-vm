@@ -1,7 +1,8 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Vm ( run
           , run_
-          , Instruction ( Chl
+          , Instruction (
+                          Chl
                         , Ldc
                         , Nul
                         , Ld
@@ -16,9 +17,11 @@ module Vm ( run
                         , Prt
                         , Rdc
                         , TestHW
-                        , Stp )
+                        , Stp
+                        )
           , Program
-          , ChillVm (ChillVm)) where
+          , ChillVm (ChillVm)
+          ) where
 import Data.Char (chr, ord)
 
 -- todo add 8bit number support
@@ -66,7 +69,7 @@ type Program = [Instruction]
 makeVm = ChillVm {
     registers = replicate registersN 0,
     pc = 0,
-    ccr = (CCR True False),
+    ccr = CCR True False,
     state = Running
 }
 
@@ -80,13 +83,13 @@ replaceNth n newVal (x:xs)
 slice :: Int -> Int -> [a] -> [a]
 slice from to xs = take (to - from + 1) (drop from xs)
 
-step :: ChillVm -> Instruction -> IO (ChillVm)
+step :: ChillVm -> Instruction -> IO ChillVm
 step vm Stp  = return $ vm { state = Stopped }
 step vm Chl = return vm
 step vm@ChillVm{registers} (Ldc reg const) = return $ vm { registers = replaceNth reg const registers }
 step vm (Nul reg) = return $ vm { registers = replaceNth reg 0 $ registers vm }
 step vm@ChillVm{registers} (Ld regDst regSrc) = return $ vm { registers = replaceNth regDst copiedValue registers }
-    where copiedValue = (registers !! regSrc)
+    where copiedValue = registers !! regSrc
 step vm Sgf = return $ error "This should be a segfault"
 step vm@ChillVm{pc} Jmp{dst} = return $ vm {pc = dst}
 step vm@ChillVm{registers} Pls{reg, regDst} = 
@@ -136,13 +139,13 @@ step vm TestHW = do
     putStrLn "Hello world!"
     return vm
 
-performInstruction :: ChillVm -> Instruction -> IO (ChillVm)
+performInstruction :: ChillVm -> Instruction -> IO ChillVm
 performInstruction vm@ChillVm{state = Stopped} _ = return vm
-performInstruction vm@ChillVm{pc} instruction = (step vm { pc = succ pc } instruction) 
+performInstruction vm@ChillVm{pc} instruction = step vm{pc = succ pc} instruction 
  
-run :: Program -> IO (ChillVm)
-run program = run' makeVm program
-    where run' :: ChillVm -> Program -> IO (ChillVm)
+run :: Program -> IO ChillVm
+run = run' makeVm
+    where run' :: ChillVm -> Program -> IO ChillVm
           run' vm@ChillVm{state = Stopped} _ = return vm
           run' vm@ChillVm{pc} program = let selectedInst = program !! pc
             in do
@@ -154,9 +157,9 @@ run_ program = do
     run program
     return ()
 
-debug :: Program -> IO (ChillVm)
-debug program = run' makeVm program
-    where run' :: ChillVm -> Program -> IO (ChillVm)
+debug :: Program -> IO ChillVm
+debug = run' makeVm
+    where run' :: ChillVm -> Program -> IO ChillVm
           run' vm@ChillVm{state = Stopped} _ = do
               putStrLn "STOPPED"
               return vm

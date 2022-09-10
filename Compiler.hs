@@ -37,23 +37,23 @@ bitcodeToInstruction str = case str of
     "11111111" -> Instruction0 Stp
 
 instructionToBitcode :: Instruction -> [String]
-instructionToBitcode str = (map $ padLeft '0' 8) $ case str of
-    Chl     -> ["00000000"]
-    (Ldc x y)    -> ["00000001", asBits x, asBits y]
-    (Nul x)    -> ["00000010", asBits x]
-    (Ld x y)     -> ["00000011", asBits x, asBits y]
-    Sgf    -> ["00000100"]
-    (Jmp x)    -> ["00000101", asBits x]
-    (Pls x y)    -> ["00000110", asBits x, asBits y]
-    (Mns x y)    -> ["00000111", asBits x, asBits y]
-    (Zbr x)    -> ["00001000", asBits x]
-    (Bbr x)    -> ["00001001", asBits x]
-    (Lbr x)    -> ["00001010", asBits x]
-    (Cmp x y)    -> ["00001011", asBits x, asBits y]
-    (Prt x y)    -> ["00001100", asBits x, asBits y]
-    (Rdc x)    -> ["00001101", asBits x]
-    TestHW -> ["11111110"]
-    Stp    -> ["11111111"]
+instructionToBitcode str = map (padLeft '0' 8) $ case str of
+    Chl       -> ["00000000"]
+    (Ldc x y) -> ["00000001", asBits x, asBits y]
+    (Nul x)   -> ["00000010", asBits x]
+    (Ld x y)  -> ["00000011", asBits x, asBits y]
+    Sgf       -> ["00000100"]
+    (Jmp x)   -> ["00000101", asBits x]
+    (Pls x y) -> ["00000110", asBits x, asBits y]
+    (Mns x y) -> ["00000111", asBits x, asBits y]
+    (Zbr x)   -> ["00001000", asBits x]
+    (Bbr x)   -> ["00001001", asBits x]
+    (Lbr x)   -> ["00001010", asBits x]
+    (Cmp x y) -> ["00001011", asBits x, asBits y]
+    (Prt x y) -> ["00001100", asBits x, asBits y]
+    (Rdc x)   -> ["00001101", asBits x]
+    TestHW    -> ["11111110"]
+    Stp       -> ["11111111"]
 
 asBits :: Int -> String
 asBits x = showIntAtBase 2 intToDigit x ""
@@ -71,9 +71,9 @@ bitToInt One = 1
 byteToInt :: Byte -> Int
 byteToInt (Byte ( b8, b7, b6, b5
                 , b4, b3, b2, b1 )) = res
-    where multipliers = map (\x -> 2 ^ x) [7,6..0]
+    where multipliers = map (2 ^) [7,6..0]
           bits = map bitToInt [b8, b7, b6, b5, b4, b3, b2, b1]
-          res = sum $ map (\(x, y) -> x * y) $ zip multipliers bits
+          res = sum $ zipWith (*) multipliers bits
 
 parseOne :: [Byte] -> (Instruction, [Byte])
 parseOne (b:bs) = case instT of
@@ -86,6 +86,6 @@ parseOne (b:bs) = case instT of
 
 compile :: [Byte] -> Program
 compile [] = []
-compile bytes = parsedOne : (compile others)
+compile bytes = parsedOne : compile others
     where (parsedOne, others) = parseOne bytes
 

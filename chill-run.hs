@@ -13,7 +13,7 @@ runVerbose sourceName = do
     input <- readFile sourceName
     putStrLn $ "Before processing:\n" ++ input
     let parsed = parse input
-    putStrLn $ "After parsing:\n" ++ (unlines parsed)
+    putStrLn $ "After parsing:\n" ++ unlines parsed
     let bytecode = map fromString parsed
     let program = compile bytecode
     putStrLn $ "Program is:\n" ++ show program
@@ -28,17 +28,12 @@ run sourceName = do
     let program = compile bytecode
     Vm.run_ program
 
-showUsage = do
-    putStrLn "Usage: chill-run path-to-text"
+showUsage = putStrLn "Usage: chill-run path-to-text"
 
 main = do  
     args <- getArgs
     if head args == "-v"
-        then do
-            if length args /= 2
-                then showUsage
-                else runVerbose $ args !! 1
+        then if length args /= 2 then showUsage else runVerbose $ args !! 1
         else if length args == 1
             then run $ head args
             else showUsage
-
