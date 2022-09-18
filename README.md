@@ -19,6 +19,7 @@ In other words, loading a 256-chars string will erase every register
 ```
 git clone https://github.com/ghB111/chill-vm.git
 cd chill-vm
+./install-libs.sh
 ./build.sh
 ./build/chill-run ./ex-hello-world.txt
 ```
@@ -48,4 +49,5 @@ Possible todos:
  - [x] Read user input
  - [ ] Macroinstructions
  - [ ] Assembly dsl?
+ - [ ] Make it an actual stack project
 
